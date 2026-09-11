@@ -169,3 +169,5 @@ print(f"UA trunk arc length: {seg1.sum():.1f}mm")
 
 np.save(os.path.join(GEOM, "ua1_path.npy"), path_a1.astype(np.float32))
 np.save(os.path.join(GEOM, "ua2_path.npy"), path_a2.astype(np.float32))
+np.save(os.path.join(GEOM, "local_cord_dist.npy"), local_cord_dist.astype(np.float32))
+np.save(os.path.join(GEOM, "taper.npy"), taper.astype(np.float32))

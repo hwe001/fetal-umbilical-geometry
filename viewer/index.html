@@ -50,6 +50,13 @@
   .swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
   .opacity-slider { width: 70px; accent-color: var(--accent); }
 
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .slider-row .slider-val { font-size: 11.5px; color: var(--muted); white-space: nowrap; min-width: 54px; text-align: right; }
+  .slider-row .slider-val b { color: var(--ink); }
+  .sub-readout { font-size: 10.5px; color: var(--muted); text-align: right; margin-top: 2px; margin-bottom: 4px; }
+  .sub-readout b { color: var(--accent); }
+
   .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-top: 12px; font-size: 11px; }
   .meta-grid .k { color: var(--muted); }
   .meta-grid .v { color: var(--ink); text-align: right; font-weight: 550; }
@@ -73,6 +80,13 @@
     box-shadow: 0 8px 30px rgba(0,0,0,0.25);
   }
   #note b { color: var(--ink); }
+
+  #footer-license {
+    position: fixed; left: 0; right: 0; bottom: 6px; text-align: center;
+    font-size: 11.5px; color: var(--muted); pointer-events: none;
+  }
+  #footer-license a { color: var(--muted); pointer-events: auto; }
+  #footer-license a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -89,17 +103,35 @@
     <div class="layer-row"><label><input type="checkbox" data-layer="ua1" checked><span class="swatch" style="background:#e8a13d"></span>UA #1 (synthetic)</label></div>
     <div class="layer-row"><label><input type="checkbox" data-layer="ua2" checked><span class="swatch" style="background:#e8a13d"></span>UA #2 (synthetic)</label></div>
 
-    <div class="meta-grid" id="meta-grid"></div>
+    <div class="row-label">Gestational age</div>
+    <div class="slider-row">
+      <input type="range" id="ga-slider" min="15" max="40" step="1" value="34">
+      <span class="slider-val"><b class="num" id="ga-val">34</b> wk</span>
+    </div>
+
+    <div class="row-label">Coiling (pitch)</div>
+    <div class="slider-row">
+      <input type="range" id="pitch-slider" min="15" max="150" step="1" value="50">
+      <span class="slider-val"><b class="num" id="pitch-val">50</b> mm/turn</span>
+    </div>
+    <div class="sub-readout"><b class="num" id="coil-val">0.20</b> spirals/cm</div>
+
+    <div class="meta-grid" id="meta-grid">
+      <div class="k">UV diameter</div><div class="v num" id="uv-diam-val-row"><b class="num" id="uv-diam-val">4.32</b> mm</div>
+      <div class="k">UA diameter</div><div class="v num" id="ua-diam-val-row"><b class="num" id="ua-diam-val">4.72</b> mm</div>
+    </div>
   </div>
 
   <div id="note">
-    <b>Provenance:</b> the UV centreline is recovered directly from the original hand-digitized CMISS cubic Hermite source mesh (<code>source_mesh/cord_offset.exnode</code>/<code>.exelem</code>, 32 nodes, 31 elements) via Gauss&ndash;Legendre quadrature &mdash; not a surface re-derivation. Arc length and straight-line distance below match the manuscript's reported values.
+    <b>Explore the geometry:</b> drag the <b>gestational age</b> slider to see the vein, arteries, and cord grow according to literature-anchored growth curves. Drag <b>coiling</b> to see how tightly the arteries wind around the vein &mdash; from a straightened cord to a hypercoiled one &mdash; while staying inside the real digitized cord boundary throughout.
   </div>
 
   <div id="hint">
     <button id="theme-toggle" aria-label="Toggle theme">&#9788;</button>
     <span>drag — <kbd>rotate</kbd><br />scroll — <kbd>zoom</kbd></span>
   </div>
+
+  <div id="footer-license">MIT License &mdash; <a href="https://github.com/hwe001/fetal-umbilical-geometry/blob/main/LICENSE" target="_blank" rel="noopener">github.com/hwe001/fetal-umbilical-geometry</a></div>
 
   <script src="three.min.js"></script>
   <script src="scene_data.js"></script>

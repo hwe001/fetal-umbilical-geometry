@@ -9,7 +9,10 @@ Hemodynamic Model."**
 
 **[Open the interactive viewer](viewer/index.html)** (clone and open
 locally, or serve `viewer/` with any static file server — it's fully
-self-contained, no build step).
+self-contained, no build step). Drag the **gestational age** slider to see
+the vein, arteries, and cord grow along their literature-anchored growth
+curves; drag **coiling** to see the arteries wind tighter or looser around
+the vein while staying inside the real digitized cord boundary throughout.
 
 This is a sibling repo to
 [hwe001/fetal-atlas-viewer](https://github.com/hwe001/fetal-atlas-viewer)
