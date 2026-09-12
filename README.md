@@ -90,7 +90,7 @@ gestational age, manually segmented in 2018-2019. All patient identifiers
 were removed prior to any analysis; only anatomical geometry is included
 here. No accession numbers, names, or scan dates are present in any file
 in this repo. Consistent with the parent atlas
-([hwe001.github.io/fetus](https://hwe001.github.io/fetus/)), public since
+([fetal-anatomy-atlas](https://github.com/hwe001/fetal-anatomy-atlas)), public since
 2019.
 
 ## Citation
