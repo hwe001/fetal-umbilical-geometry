@@ -421,21 +421,78 @@
   requestAnimationFrame(tick);
 
   // ---------------------------------------------------------------------
-  // camera orbit controls (same as main viewer)
+  // camera orbit + pan controls (same as main viewer)
+  //   drag -> rotate; right/middle/shift drag -> pan; two-finger -> pan+pinch
   // ---------------------------------------------------------------------
   var camState = { az: 0.6, pol: 1.15, radius: maxDim * 1.15, target: new THREE.Vector3(0, 0, 0) };
-  var dragging = false, lastX = 0, lastY = 0;
+  var pointers = new Map();   // pointerId -> {x, y}
+  var mode = null;            // "rotate" | "pan"
+  var lastX = 0, lastY = 0;
+  var panMid = { x: 0, y: 0 }, pinchDist = 0;
+
+  function cameraBasis() {
+    var fwd = new THREE.Vector3().subVectors(camState.target, camera.position).normalize();
+    var right = new THREE.Vector3().crossVectors(fwd, camera.up).normalize();
+    var up = new THREE.Vector3().crossVectors(right, fwd).normalize();
+    return { right: right, up: up };
+  }
+  function panBy(dx, dy) {
+    var b = cameraBasis(), s = camState.radius * 0.0016;
+    camState.target.addScaledVector(b.right, -dx * s);
+    camState.target.addScaledVector(b.up, dy * s);
+  }
+
   viewportEl.addEventListener("pointerdown", function (e) {
-    dragging = true; lastX = e.clientX; lastY = e.clientY;
-    viewportEl.classList.add("dragging"); viewportEl.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    viewportEl.setPointerCapture(e.pointerId);
+    if (pointers.size === 1) {
+      mode = (e.button === 2 || e.button === 1 || e.shiftKey) ? "pan" : "rotate";
+      lastX = e.clientX; lastY = e.clientY;
+    } else if (pointers.size === 2) {
+      mode = "pan";
+      var p = Array.from(pointers.values());
+      panMid = { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 };
+      pinchDist = Math.hypot(p[1].x - p[0].x, p[1].y - p[0].y);
+    }
+    viewportEl.classList.add("dragging");
   });
   viewportEl.addEventListener("pointermove", function (e) {
-    if (!dragging) return;
-    var dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
-    camState.az -= dx * 0.0055;
-    camState.pol = Math.max(0.12, Math.min(Math.PI - 0.12, camState.pol - dy * 0.0055));
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 1) {
+      var dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+      if (mode === "pan") panBy(dx, dy);
+      else {
+        camState.az -= dx * 0.0055;
+        camState.pol = Math.max(0.12, Math.min(Math.PI - 0.12, camState.pol - dy * 0.0055));
+      }
+    } else if (pointers.size === 2) {
+      var p = Array.from(pointers.values());
+      var mx = (p[0].x + p[1].x) / 2, my = (p[0].y + p[1].y) / 2;
+      panBy(mx - panMid.x, my - panMid.y);
+      panMid = { x: mx, y: my };
+      var d = Math.hypot(p[1].x - p[0].x, p[1].y - p[0].y);
+      if (pinchDist > 0) {
+        camState.radius = Math.max(maxDim * 0.1, Math.min(maxDim * 6, camState.radius * (pinchDist / d)));
+      }
+      pinchDist = d;
+    }
   });
-  window.addEventListener("pointerup", function () { dragging = false; viewportEl.classList.remove("dragging"); });
+  function endPointer(e) {
+    pointers.delete(e.pointerId);
+    if (pointers.size === 0) {
+      mode = null;
+      viewportEl.classList.remove("dragging");
+    } else if (pointers.size === 1) {
+      var p = Array.from(pointers.values())[0];
+      lastX = p.x; lastY = p.y;
+      mode = "rotate";
+    }
+  }
+  window.addEventListener("pointerup", endPointer);
+  window.addEventListener("pointercancel", endPointer);
+  viewportEl.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
   viewportEl.addEventListener("wheel", function (e) {
     e.preventDefault();
     camState.radius = Math.max(maxDim * 0.1, Math.min(maxDim * 6, camState.radius * (1 + e.deltaY * 0.0012)));
